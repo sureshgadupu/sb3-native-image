@@ -1,18 +1,20 @@
-name: Releases
+# https://docs.github.com/en/actions
 
-on:
+name: "Release"
+
+on: # yamllint disable-line rule:truthy
   push:
     tags:
-      - '*'
+      - "**"
 
 jobs:
+  release:
+    name: "Release"
 
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    runs-on: "ubuntu-latest"
+
     steps:
-      - uses: actions/checkout@v2
-      - uses: ncipollo/release-action@v1
+      - name: "Create release"
+        uses: "ergebnis/.github/actions/github/release/create@1.8.0"
         with:
-          artifacts: "sb3-native-image-*"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
