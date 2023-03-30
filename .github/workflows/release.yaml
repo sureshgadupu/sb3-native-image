@@ -48,6 +48,6 @@ jobs:
       - name: Upload release artifacts
         uses: Roang-zero1/github-upload-release-artifacts-action@v2
         with:
-          args: "target/sb3-native-image*"
+          args: "/sb3-native-image/target/sb3-native-image*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
