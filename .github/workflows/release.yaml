@@ -44,6 +44,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           draft: false # Remove this to publish the release once tested and confirmed.
-          files: "./target/sb3-native-image*" # Update this path to match your artifacts location.
+          files: | # Update this path to match your artifacts location.
+            ./target/sb3-native-image-${{ matrix.os }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
