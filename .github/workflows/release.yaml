@@ -40,9 +40,10 @@ jobs:
         uses: "ergebnis/.github/actions/github/release/create@1.8.0"
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Upload release artifacts
-        uses: Roang-zero1/github-upload-release-artifacts-action@v2
+      - name: Release artifacts
+        uses: softprops/action-gh-release@v1
         with:
-          args: "./target/sb3-native-image*"
+          draft: false # Remove this to publish the release once tested and confirmed.
+          files: "./target/sb3-native-image*" # Update this path to match your artifacts location.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
