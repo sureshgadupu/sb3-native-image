@@ -8,7 +8,7 @@ on: # yamllint disable-line rule:true
       - "**"
 
 jobs:
-  release:
+  build-native-image:
     name: SpringBoot Native Application on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,16 +35,48 @@ jobs:
 #          echo "M2_HOME=/usr/share/apache-maven-3.6.3" | tee -a /etc/environment
       - name: Build with Maven
         run: mvn --batch-mode -Pnative native:compile
-
-      - name: "Create release"
-        uses: "ergebnis/.github/actions/github/release/create@1.8.0"
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          name: sb3-native-image-${{ matrix.os }}
+          path: |
+            ./target/sb3-native-image*.exe
+            ./target/sb3-native-image
+            !./target/sb3-native-image*.jar
+            !./target/sb3-native-image*.txt
+#      - name: "Create release"
+#        uses: "ergebnis/.github/actions/github/release/create@1.8.0"
+#        with:
+#          github-token: "${{ secrets.GITHUB_TOKEN }}"
+#      - name: Release artifacts
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          draft: false # Remove this to publish the release once tested and confirmed.
+#          files: | # Update this path to match your artifacts location.
+#            ./target/sb3-native-image-${{ matrix.os }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-binary:
+    needs: build-native-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: spring-boot-native-image
+
+      - name: Prepare environment variables and extract binary filename
+        run: |
+          ARTIFACT_PATH="${{ github.workspace }}/spring-boot-native-image"
+          FILE="$(ls $ARTIFACT_PATH/*-runner)"; FILENAME="$(basename -- $FILE)"
+          echo "ARTIFACT_PATH=$ARTIFACT_PATH" >> $GITHUB_ENV;
+          echo "BINARY_FILENAME=$FILENAME" >> $GITHUB_ENV;
       - name: Release artifacts
         uses: softprops/action-gh-release@v1
         with:
           draft: false # Remove this to publish the release once tested and confirmed.
           files: | # Update this path to match your artifacts location.
-            ./target/sb3-native-image-${{ matrix.os }}
+            ${{ ARTIFACT_PATH }}/ ${{ BINARY_FILENAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
