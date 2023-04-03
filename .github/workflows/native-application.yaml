@@ -34,4 +34,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: sb3-native-image-${{ matrix.os }}
-          path: ./target/
+          path: |
+            ./target/sb3-native-image*.exe
+            ./target/sb3-native-image
+            !./target/sb3-native-image*.jar
+            !./target/sb3-native-image*.txt
