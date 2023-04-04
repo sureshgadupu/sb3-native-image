@@ -13,7 +13,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: sb3-native-image
+            asset_name: sb3-native-image-linux-amd64
+          - os: windows-latest
+            artifact_name: sb3-native-image.exe
+            asset_name: sb3-native-image-windows-amd64
+          - os: macos-latest
+            artifact_name: sb3-native-image
+            asset_name: sb3-native-image-macos-amd64
     steps:
       - uses: actions/checkout@v3
 
@@ -35,48 +44,10 @@ jobs:
 #          echo "M2_HOME=/usr/share/apache-maven-3.6.3" | tee -a /etc/environment
       - name: Build with Maven
         run: mvn --batch-mode -Pnative native:compile
-      - name: Upload binary
-        uses: actions/upload-artifact@v2
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: sb3-native-image-${{ matrix.os }}
-          path: |
-            ./target/sb3-native-image*.exe
-            ./target/sb3-native-image
-            !./target/sb3-native-image*.jar
-            !./target/sb3-native-image*.txt
-#      - name: "Create release"
-#        uses: "ergebnis/.github/actions/github/release/create@1.8.0"
-#        with:
-#          github-token: "${{ secrets.GITHUB_TOKEN }}"
-#      - name: Release artifacts
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          draft: false # Remove this to publish the release once tested and confirmed.
-#          files: | # Update this path to match your artifacts location.
-#            ./target/sb3-native-image-${{ matrix.os }}
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release-binary:
-    needs: build-native-image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: spring-boot-native-image
-
-      - name: Prepare environment variables and extract binary filename
-        run: |
-          ARTIFACT_PATH="${{ github.workspace }}/spring-boot-native-image"
-          FILE="$(ls $ARTIFACT_PATH/*-runner)"; FILENAME="$(basename -- $FILE)"
-          echo "ARTIFACT_PATH=$ARTIFACT_PATH" >> $GITHUB_ENV;
-          echo "BINARY_FILENAME=$FILENAME" >> $GITHUB_ENV;
-      - name: Release artifacts
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: false # Remove this to publish the release once tested and confirmed.
-          files: | # Update this path to match your artifacts location.
-            ${{ ARTIFACT_PATH }}/ ${{ BINARY_FILENAME }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
