@@ -23,7 +23,7 @@ jobs:
           - os: macos-latest
             artifact_name: sb3-native-image
             asset_name: sb3-native-image-macos-amd64
-          - os: linuxarm64
+          - os: self-hosted
             artifact_name: sb3-native-image
             asset_name: sb3-native-image-linux-arm64
     steps:
